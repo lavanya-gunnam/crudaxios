@@ -1,0 +1,22 @@
+{
+  "employess": [
+    {
+      "first_name": "lavanya devi",
+      "last_name": "maddukuri",
+      "email": "devi@gmail.com",
+      "id": 1
+    },
+    {
+      "first_name": "sameer vishnu",
+      "last_name": "vishnu sameer",
+      "email": "sameer@gmail.com",
+      "id": 2
+    },
+    {
+      "first_name": "srinu ",
+      "last_name": " vasu ",
+      "email": "srinuvasu@gmail.com",
+      "id": 3
+    }
+  ]
+}

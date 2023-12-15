@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <title>CRUD Operations</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-6">
+                <h2 style="text-align: center;">Employee Data</h2>
+                <form id="myform" class="p-3 border border-5" onsubmit="return false" method="post">
+                    <div class="row mb-3 mt-3">
+                        <div class="col">
+                            <label>FirstName:</label>
+                            <input type="text" class="form-control input" placeholder="Enter employee name" id="name">
+                        </div>
+                        <div class="col">
+                            <label>LastName:</label>
+                            <input type="text" class="form-control input" placeholder="Enter employee name" id="lastname">
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label>Email:</label>
+                        <input type="email" class="form-control input" placeholder="Enter employee email" id="emailid">
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-primary" onclick="addEmployee()">submit</button>
+                       
+                    </div>
+                </form>
+            </div>
+            <div class="col-6 mt-2">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Firstname</th>
+                            <th>Lastname</th>
+                            <th>Email</th>
+                            <th>Edit</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table_data"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                 <h4 class="modal-title" id="myModalLabel">Edit User</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+           
+              </div>
+              <div class="modal-body">
+                  <form id="updateUser" method="post"  onsubmit="return false"  class="p-3 border border-dark">
+                      <input type="hidden" id="empId">
+                      <div class="mb-3 mt-3">
+                        <label>FirstName:</label>
+                        <input type="text" class="form-control input"  placeholder="Enter name" id="updatename" name="firstname" required>
+                     
+                      </div>
+                      <div class="mb-3 mt-3">
+                        <label>LastName:</label>
+                        <input type="text" class="form-control input"  placeholder="Enter name" id="updatelname" name="lastname" required>
+                      
+                      </div>
+                      <div class="mb-3 mt-3">
+                        <label>Email:</label>
+                        <input type="email" class="form-control input" placeholder="Enter email" id="updateemail" name="email" required>
+                        
+                      </div>
+                      
+                        <button type="submit" class="btn btn-primary" onclick="updateemploye()">Submit</button>
+                      </div>
+
+                    </form>
+              </div>
+              <div class="modal-footer"></div>
+            </div>
+          </div>
+      </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+    <script>
+        getEmployees();
+
+        function addEmployee() {
+            let first_name = document.getElementById("name").value;
+            let last_name = document.getElementById("lastname").value;
+            let email = document.getElementById("emailid").value;
+
+            if (first_name && last_name && email) {
+                const url = "http://localhost:3000/employess";
+                axios.post(url, { first_name, last_name, email })
+                    .then(function (response) {
+                        console.log("Adding employee:", response);
+                        getEmployees();
+                    })
+                    .catch(function (error) {
+                        console.error("Error adding employee:", error);
+                    });
+            }
+
+            // Clear form fields
+            document.getElementById("name").value = "";
+            document.getElementById("lastname").value = "";
+            document.getElementById("emailid").value = "";
+        }
+
+        function getEmployees() {
+            const url = "http://localhost:3000/employess";
+            axios.get(url)
+                .then(function (response) {
+                    console.log("Get employees:", response);
+                    let getdata = document.querySelector("#table_data");
+                    let out = "";
+                    for (let employee of response.data) {
+                        out += `
+                        <tr>
+                            <td>${employee.first_name}</td>
+                            <td>${employee.last_name}</td>
+                            <td>${employee.email}</td>
+                            <td><button class='btn btn-primary' onclick="editEmployee(${employee.id})">Edit</button></td>
+                            <td><button class='btn btn-danger' onclick="deleteEmployee(${employee.id})">Delete</button></td>
+                        </tr>`;
+                    }
+                    getdata.innerHTML = out;
+                })
+                .catch(function (error) {
+                    console.error("Error getting employees:", error);
+                });
+        }
+        function editEmployee(id){
+          
+  const url = `http://localhost:3000/employess/${id}`;
+axios.get(url)
+  .then(function(response){
+    console.log(response.data,"getting a data for exact record")
+    
+    $("#updatename").val(response.data.first_name)
+            $("#updatelname").val(response.data.last_name)
+            $("#updateemail").val(response.data.email)
+            $('#empId').val(response.data.id)
+    $('#myModal').modal('show');
+  })
+  .catch(function (error) {
+                        console.error("Error adding employee:", error);
+                    });
+}
+function updateemploye(){
+let id = $('#empId').val()
+   let first_name = $("#updatename").val()
+  let last_name = $("#updatelname").val()
+  let email = $("#updateemail").val()
+  console.log(id,first_name,last_name,email,"editting before api hit");
+ const url = `http://localhost:3000/employess/${id}`;
+    axios.put(url,{first_name,last_name,email})
+    .then(function(response){
+      console.log("updating employee:", response);
+      getEmployees();
+     })
+     .catch(function (error) {
+                        console.error("Error adding employee:", error);
+                    });
+    $("#myModal").modal("toggle");
+    
+}
+       
+  function deleteEmployee(id) {
+            const url = `http://localhost:3000/employess/${id}`;
+            axios.delete(url)
+                .then(function (response) {
+                    console.log("Deleting employee:", response);
+                    getEmployees();
+                })
+                .catch(function (error) {
+                    console.error("Error deleting employee:", error);
+                });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script
+  src="https://code.jquery.com/jquery-3.6.1.min.js"
+  integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ="
+  crossorigin="anonymous"></script>
+    <title>curd operations</title>
+   
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+        
+          <div class="col-6">
+            <h2 style="text-align: center;">Employe Data</h2>
+            <form id="myform"  class="p-3 border border-5" onsubmit="return false" method="post" >
+              <div class="row mb-3 mt-3">
+                <div class="col">
+                    <label>FirstName:</label>
+                    <input type="text" class="form-control input" placeholder="Enter employee name" id="name">
+                </div>
+                <div class="col">
+                    <label>LastName:</label>
+                    <input type="text" class="form-control input" placeholder="Enter employee name" id="lastname">
+                </div>
+            </div>
+              <div class="mb-3 mt-3">
+                <label>Email:</label>
+                <input type="email" class="form-control input" placeholder="Enter employe email" id="emailid">
+              
+              </div>
+              <div >
+                <button type="submit" class="btn btn-primary" onclick="return postemployee()">Submit</button>
+              </div>
+            </form>
+        
+          </div>
+          <div class="col-6 mt-2">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                      <th>Firstname</th>
+                      <th>Lastname</th>
+                      <th>Email</th>
+                      <th>Edit</th>
+                     <th>Delete</th>
+                    </tr>
+                 </thead>
+                 <tbody id="table_data">
+                 
+               </tbody>
+            </table>
+            
+          </div>
+        </div>
+      </div>
+      <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+      <script>
+   getemployee()
+   function postemployee(){
+  let first_name = document.getElementById("name").value;
+  let last_name = document.getElementById("lastname").value;
+  let email = document.getElementById("emailid").value;
+   console.log("geting data from html form based on id",first_name,last_name,email);
+  if(first_name&&last_name&&email){
+
+    const url = "http://localhost:3000/employess";
+      
+    axios.post(url,{first_name,last_name,email})
+    .then(function(response){
+       console.log("sending data using with axios post method",response)
+      return (response.data); 
+    })
+    .catch(function (error) {
+                console.error("Error in Axios POST request", error);
+            })
+  }
+
+  document.getElementById("name").value = "";
+  document.getElementById("lastname").value = "";
+  document.getElementById("emailid").value = "";
+  getemployee()
+}
+function getemployee(){
+  const url = "http://localhost:3000/employess"
+  axios.get(url)
+  .then(function(response){
+    console.log("get ",response)
+    let getdata = document.querySelector("#table_data");
+    let out = "";
+    for(let employe of response.data){
+      out += `
+      <tr>
+        <td>${employe.first_name}</td>
+        <td>${employe.last_name}</td>
+        <td>${employe.email}</td>
+        <td><button class='btn btn-primary' onclick="editemploye(${employe.id})">Edit</button></td>
+       <td><button class='btn btn-danger' onclick="deleteemploye(${employe.id})">delete</button></td>
+      </tr>`;
+    }
+    getdata.innerHTML = out;
+
+  })
+}
+
+function deleteemploye(id){
+  
+  const url = "http://localhost:3000/employess/"+id
+  axios.delete(url)
+  .then(function(response){
+    getemployee()
+})
+}   
+
+      </script>
+
+</body>
+</html> -->
